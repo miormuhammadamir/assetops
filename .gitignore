@@ -1,0 +1,25 @@
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+staticfiles/
+.pytest_cache/
+.coverage
+.idea/
+.vscode/
+*.log
+# Environment files and credentials
+.env.*
+!.env.example
+*.pem
+*.key
+*service-account*.json
+
+# Local database files
+db.sqlite3-journal
+
+# Local development files
+.DS_Store
+Thumbs.db
