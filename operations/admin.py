@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Asset,WorkOrder,WorkOrderEvent
+from .models import Asset,WorkOrder,WorkOrderEvent,MaintenancePlan,MaintenanceOccurrence
 @admin.register(Asset)
 class AssetAdmin(admin.ModelAdmin):
     list_display=['code','name','location','status','criticality','next_maintenance']
@@ -17,3 +17,21 @@ class WorkOrderEventAdmin(admin.ModelAdmin):
     def has_add_permission(self,request):return False
     def has_change_permission(self,request,obj=None):return False
     def has_delete_permission(self,request,obj=None):return False
+
+
+@admin.register(MaintenancePlan)
+class MaintenancePlanAdmin(admin.ModelAdmin):
+    list_display = ['title', 'asset', 'interval_days', 'next_due', 'is_active', 'assigned_to']
+    list_filter = ['is_active', 'next_due']
+    search_fields = ['title', 'asset__code']
+
+
+@admin.register(MaintenanceOccurrence)
+class MaintenanceOccurrenceAdmin(admin.ModelAdmin):
+    list_display = ['plan', 'scheduled_for', 'work_order', 'created_at']
+    def has_add_permission(self, request):
+        return False
+    def has_change_permission(self, request, obj=None):
+        return False
+    def has_delete_permission(self, request, obj=None):
+        return False

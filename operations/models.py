@@ -62,3 +62,55 @@ class WorkOrderEvent(models.Model):
     timestamp=models.DateTimeField(auto_now_add=True)
     class Meta:
         ordering=['-timestamp']
+
+
+class MaintenancePlan(models.Model):
+    """Recurring calendar-based maintenance; each plan represents one activity."""
+
+    asset = models.ForeignKey(Asset, on_delete=models.PROTECT, related_name='maintenance_plans')
+    title = models.CharField(max_length=180)
+    instructions = models.TextField()
+    interval_days = models.PositiveIntegerField()
+    next_due = models.DateField(db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    priority = models.CharField(max_length=12, choices=WorkOrder.Priority.choices, default=WorkOrder.Priority.MEDIUM)
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True,
+        related_name='maintenance_plans',
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='created_maintenance_plans',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['next_due', 'id']
+
+    def clean(self):
+        super().clean()
+        if self.interval_days is not None and not 1 <= self.interval_days <= 3650:
+            raise ValidationError({'interval_days': 'Interval must be between 1 and 3650 days.'})
+
+    def __str__(self):
+        return f'{self.asset.code}: {self.title}'
+
+
+class MaintenanceOccurrence(models.Model):
+    """One scheduled work order per plan and due date."""
+
+    plan = models.ForeignKey(MaintenancePlan, on_delete=models.PROTECT, related_name='occurrences')
+    scheduled_for = models.DateField()
+    work_order = models.OneToOneField(
+        WorkOrder, on_delete=models.PROTECT, related_name='maintenance_occurrence',
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-scheduled_for']
+        constraints = [
+            models.UniqueConstraint(fields=['plan', 'scheduled_for'], name='unique_maintenance_plan_due_date'),
+        ]
+
+    def __str__(self):
+        return f'{self.plan_id} due {self.scheduled_for}'
