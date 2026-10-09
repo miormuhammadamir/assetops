@@ -13,6 +13,7 @@ AssetOps is a portfolio MVP for registering equipment and managing industrial ma
 - Operations dashboard
 - Django admin for supervisors and system administrators
 - Automated workflow/access tests
+- Preventive maintenance plans, automatic due work order generation, and audit events
 
 ## Stack
 
@@ -66,3 +67,22 @@ MVP only; not production certified. CSRF, password validation, session cookies a
 ## License
 
 MIT (see LICENSE).
+
+## Preventive maintenance (V0.2)
+
+Supervisors/Admins can create and pause recurring plans at `/maintenance/`. Each plan includes an asset, instructions, interval in days, first/next due date, priority, and optional assigned technician.
+
+Run the scheduler manually after creating a due plan:
+
+```bash
+python manage.py migrate
+python manage.py generate_maintenance
+# For a specific date during testing:
+python manage.py generate_maintenance --date 2026-10-09
+python manage.py test
+python manage.py makemigrations --check --dry-run
+```
+
+Schedule `python manage.py generate_maintenance` once per day on a trusted server cron/scheduler. **It does not run automatically when the web server starts.** The command creates at most one occurrence per plan per run. When many periods are overdue, run again to catch up. Each occurrence is uniquely identified by `(plan, scheduled_for)`. SQLite has no useful row-level `select_for_update()` locking; configure a single scheduler worker on SQLite. PostgreSQL is preferred for concurrent production operation.
+
+Generated work orders use the plan creator as the service actor and are linked to the plan through `MaintenanceOccurrence`. This MVP does not yet provide a dedicated non-human system user or job queue.

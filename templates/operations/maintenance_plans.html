@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Preventive maintenance{% endblock %}
+{% block content %}
+<p class="muted intro">Recurring inspection and service schedules.</p>
+<div class="panel">
+  <div class="panel-header"><div><h2>Maintenance plans</h2><p class="muted">Due plans become work orders when the daily command runs.</p></div>
+  {% if can_manage %}<a class="btn primary" href="{% url 'maintenance_plan_create' %}">New plan</a>{% endif %}</div>
+  <div class="table-wrap"><table><thead><tr><th>PLAN</th><th>ASSET</th><th>EVERY</th><th>NEXT DUE</th><th>TECHNICIAN</th><th>STATUS</th><th></th></tr></thead><tbody>
+  {% for plan in plans %}
+  <tr><td><strong>{{ plan.title }}</strong></td><td>{{ plan.asset.code }}</td><td>{{ plan.interval_days }} days</td><td>{{ plan.next_due }}</td>
+  <td>{{ plan.assigned_to.username|default:'Unassigned' }}</td><td>{% if not plan.is_active %}Paused{% elif plan.next_due < today %}Overdue{% else %}Active{% endif %}</td>
+  <td>{% if can_manage %}<form method="post" action="{% url 'maintenance_plan_toggle' plan.pk %}">{% csrf_token %}<button class="btn" type="submit">{% if plan.is_active %}Pause{% else %}Resume{% endif %}</button></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7">No plans yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+</div>
+{% endblock %}
