@@ -1,11 +1,9 @@
 # Changelog
 
-## 0.1.0 — Initial MVP
-- Asset registry and search
-- Work order creation, assignments, status workflow and events
-- Login, roles, dashboard, basic tests and documentation
+## Portfolio release — consolidated application
+- Includes V0.1 asset and work-order management.
+- Includes V0.2 preventive maintenance and migration synchronization.
+- Includes V0.3 REST API and test suite.
+- Expanded user, architecture, database, security, API and deployment documentation.
 
-## 0.2.0 (unreleased)
-- Add maintenance plans, due schedule generation, duplicate prevention and supervisor controls.
-- Add maintenance dashboard counts and tests.
-- Apply V0.1 workflow test fixes.
+Note: documentation consolidation is not a claim of passing Django runtime tests in this packaging environment.

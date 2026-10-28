@@ -1,12 +1,38 @@
-# Deployment guide
+# Deployment and Operations Guide
 
-This is a **development-first MVP**. A public deployment requires a hosting service that runs Python WSGI, HTTPS termination, environment variables and a persistent database.
+## Local Windows installation
+```powershell
+cd C:\Projectsssetops
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+$env:DJANGO_DEBUG="1"
+python manage.py migrate
+python manage.py setup_roles
+python manage.py createsuperuser
+python manage.py test
+python manage.py runserver
+```
+Open `http://127.0.0.1:8000/`. Local DEBUG mode is for a private development computer only.
 
-1. Provision PostgreSQL and a least-privilege database user; back up data before migrations.
-2. Set `DJANGO_DEBUG=0`, a strong `DJANGO_SECRET_KEY`, `DJANGO_ALLOWED_HOSTS`, and PostgreSQL credentials in hosting environment variables (do not commit `.env`).
-3. Set `DJANGO_CSRF_TRUSTED_ORIGINS` for your HTTPS origin and enable `DJANGO_SECURE_SSL_REDIRECT=1` if your TLS proxy correctly forwards the scheme. Configure `SECURE_PROXY_SSL_HEADER` only for a trusted proxy with controlled headers.
-4. Install requirements, run `python manage.py check --deploy`, `python manage.py migrate`, `python manage.py setup_roles`, and `python manage.py collectstatic --noinput`.
-5. Serve static files through a web server or supported static middleware, and configure WSGI using `config.wsgi:application`.
-6. Configure password and login brute-force defenses, audit retention, monitoring, log hygiene and backup/recovery testing before production use.
+## Environment variables
+`DJANGO_SECRET_KEY` (required for DEBUG=0), `DJANGO_DEBUG` (0 or 1), `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `DJANGO_TIME_ZONE`, `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `DJANGO_SECURE_SSL_REDIRECT`, `DJANGO_HSTS_SECONDS`.
 
-Rollback: restore the previous application release. Database rollback requires a tested migration rollback or a verified backup restore; avoid rolling back destructive migrations without a recovery plan.
+This project **does not automatically load `.env` files**. Configure environment variables in the process manager or terminal; do not commit secrets. `.env.example` documents the names.
+
+## Scheduler
+Run manually:
+```powershell
+python manage.py generate_maintenance
+```
+Production scheduling requires a process manager (cron, Windows Task Scheduler or equivalent) launching a configured Django environment. Use one scheduler on SQLite. Prefer PostgreSQL in multi-worker deployments. Verify idempotency of a single due date; each subsequent run may process the next overdue interval.
+
+## Production readiness
+Use a supported WSGI/ASGI server behind HTTPS reverse proxy; configure static file serving, secure headers, host restrictions, PostgreSQL, monitoring and backups. Django `runserver` is not suitable for production. `python manage.py check --deploy` provides a checklist, not certification.
+
+## Migration procedure
+1. Announce maintenance window where appropriate and back up database.
+2. Deploy tested source and install dependencies.
+3. Run `python manage.py migrate` once.
+4. Run smoke tests; verify login, asset read, work-order status and scheduler.
+5. Roll back application code only if compatible with migrated schema; restore from tested database backup if necessary. Do not casually reverse destructive migrations.

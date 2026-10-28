@@ -1,88 +1,43 @@
 # AssetOps — Industrial Asset & Maintenance Management
 
-AssetOps is a portfolio MVP for registering equipment and managing industrial maintenance workflows.
+Portfolio-grade **Django maintenance management application** with server-rendered web UI and a Django REST Framework API. Supports registered equipment, controlled maintenance work orders, recurring preventive plans and auditable status events.
 
-## Features
+> **Status:** demonstrable application / portfolio release. Not certified or hardened for live industrial operations. Runtime verification must be performed in your deployment environment.
 
-- Session login and role-based permissions (Django Groups)
-- Asset registry and asset search
-- Maintenance work orders and technician assignment
-- Controlled workflow: Open → In progress → Review → Completed; with permitted cancellation/rework
-- Required resolution notes before review
-- Status-change audit events
-- Operations dashboard
-- Django admin for supervisors and system administrators
-- Automated workflow/access tests
-- Preventive maintenance plans, automatic due work order generation, and audit events
+## Implemented features
+- Login/logout and Group-based roles: Admin, Supervisor, Technician, Viewer.
+- Asset registration, search, status and criticality.
+- Work orders with technician assignment and guarded state changes.
+- Resolution notes, supervisor approval and work order status audit events.
+- Recurring preventive maintenance plans with generation management command.
+- DRF `/api/v1/` endpoints with session authentication, CSRF and role-based writes.
+- Pagination, filters and automated tests.
 
-## Stack
-
-Python 3.11+, Django 5.2 LTS, server-rendered Django templates, SQLite (development), PostgreSQL (optional production backend).
-
-## Local installation
-
-```bash
+## Quick start (Windows PowerShell)
+```powershell
 python -m venv .venv
-# Windows PowerShell: .venv\Scripts\Activate.ps1
-# macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt
-# Copy .env.example to .env and set a unique SECRET KEY
-# This repository intentionally does not auto-load .env files.
-# For local testing, set the environment variables manually:
-# Windows PowerShell: $env:DJANGO_DEBUG='1'
-# macOS/Linux: export DJANGO_DEBUG=1
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+$env:DJANGO_DEBUG="1"
 python manage.py migrate
 python manage.py setup_roles
 python manage.py createsuperuser
+python manage.py test
 python manage.py runserver
 ```
-
-Open http://127.0.0.1:8000 and log in as your superuser. Through `/admin/`, create regular user accounts and assign each user to one of the groups: `Admin`, `Supervisor`, `Technician`, or `Viewer`. Groups control application screens; Django's `is_staff` separately controls access to the Django administration interface. Only grant `is_staff` and explicit model permissions to trusted users.
-
-## Permissions
-
-| Action | Admin/Supervisor | Technician | Viewer |
-| --- | --- | --- | --- |
-| See dashboards, assets, work orders | Yes | Yes | Yes |
-| Register assets | Yes | No | No |
-| Create work orders | Yes | Yes (self-assigned) | No |
-| Work on order | Yes | Assigned orders | No |
-| Complete/cancel orders | Yes | No | No |
-
-## Tests
-
-```bash
-python manage.py test
-python manage.py check
-```
+Visit http://127.0.0.1:8000/ ; admin is at `/admin/`, API at `/api/v1/`. For maintenance orders run `python manage.py generate_maintenance` manually or from a scheduler.
 
 ## Documentation
-
-See `docs/REQUIREMENTS.md`, `docs/DATABASE.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`, and `docs/ROADMAP.md`.
-
-## Security notes
-
-MVP only; not production certified. CSRF, password validation, session cookies and role checks use Django. Configure HTTPS and trusted hosts in production. Use a PostgreSQL-backed deployment and implement backups, login throttling, monitoring, and per-site asset restrictions before handling real company data. Do not commit credentials or production records.
+- [Installation](docs/INSTALLATION.md)
+- [User Guide](docs/USER_GUIDE.md)
+- [Requirements](docs/REQUIREMENTS.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Database / ERD](docs/DATABASE.md)
+- [API Reference](docs/API.md)
+- [Security](docs/SECURITY.md)
+- [Testing](docs/TESTING.md)
+- [Deployment / Operations](docs/DEPLOYMENT.md)
+- [Roadmap](docs/ROADMAP.md)
 
 ## License
-
-MIT (see LICENSE).
-
-## Preventive maintenance (V0.2)
-
-Supervisors/Admins can create and pause recurring plans at `/maintenance/`. Each plan includes an asset, instructions, interval in days, first/next due date, priority, and optional assigned technician.
-
-Run the scheduler manually after creating a due plan:
-
-```bash
-python manage.py migrate
-python manage.py generate_maintenance
-# For a specific date during testing:
-python manage.py generate_maintenance --date 2026-10-09
-python manage.py test
-python manage.py makemigrations --check --dry-run
-```
-
-Schedule `python manage.py generate_maintenance` once per day on a trusted server cron/scheduler. **It does not run automatically when the web server starts.** The command creates at most one occurrence per plan per run. When many periods are overdue, run again to catch up. Each occurrence is uniquely identified by `(plan, scheduled_for)`. SQLite has no useful row-level `select_for_update()` locking; configure a single scheduler worker on SQLite. PostgreSQL is preferred for concurrent production operation.
-
-Generated work orders use the plan creator as the service actor and are linked to the plan through `MaintenanceOccurrence`. This MVP does not yet provide a dedicated non-human system user or job queue.
+MIT. See LICENSE.
