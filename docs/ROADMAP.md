@@ -1,12 +1,18 @@
-# Roadmap
+# Product Roadmap
 
-## Next milestone (0.2)
-- API (DRF) with serializer validation, per-endpoint permissions and OpenAPI docs
-- Asset detail/edit, pagination and tenant/location scoping
-- Structured logs, audit creation/assignment history
-- Preventive maintenance schedules
-- Email reminders and work order attachments with secure storage
+## Included in this source package
+V0.1: asset registry, work orders, RBAC, basic dashboard and audit events.
+V0.2: recurring maintenance plans, plan controls, scheduled work order generation.
+V0.3: session-authenticated DRF API with read/write role restrictions, pagination and tests.
 
-## Later
-- Inventory/spare parts, document revisions, analytics, MTTR/MTBF
-- PostgreSQL production rollout, CI/CD, Docker, observability, rate-limited authentication and SSO
+## Future enhancements (not implemented)
+- Per-site scopes and object-level access control.
+- User management UI and approval delegation.
+- Better downtime and failure metrics with event timestamps.
+- File attachments with malware scanning and access enforcement.
+- Reporting exports, analytics and equipment-hour recurrence.
+- Token/OAuth integrations and OpenAPI schema.
+- Multi-worker scheduling hardening, production monitoring and backup automation.
+
+## Quality gates
+Test locally, verify migration consistency, push feature branch, obtain CI pass, review diff, merge via Pull Request.

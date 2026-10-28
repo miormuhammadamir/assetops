@@ -8,7 +8,7 @@ if not DEBUG and SECRET_KEY=='development-only-unsafe-key':
     raise ImproperlyConfigured('Set DJANGO_SECRET_KEY when DEBUG=0')
 ALLOWED_HOSTS=[h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS','127.0.0.1,localhost').split(',') if h.strip()]
 CSRF_TRUSTED_ORIGINS=[h.strip() for h in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS','').split(',') if h.strip()]
-INSTALLED_APPS=['django.contrib.admin','django.contrib.auth','django.contrib.contenttypes','django.contrib.sessions','django.contrib.messages','django.contrib.staticfiles','operations']
+INSTALLED_APPS=['django.contrib.admin','django.contrib.auth','django.contrib.contenttypes','django.contrib.sessions','django.contrib.messages','django.contrib.staticfiles','rest_framework','operations']
 MIDDLEWARE=['django.middleware.security.SecurityMiddleware','django.contrib.sessions.middleware.SessionMiddleware','django.middleware.common.CommonMiddleware','django.middleware.csrf.CsrfViewMiddleware','django.contrib.auth.middleware.AuthenticationMiddleware','django.contrib.messages.middleware.MessageMiddleware','django.middleware.clickjacking.XFrameOptionsMiddleware']
 ROOT_URLCONF='config.urls'
 TEMPLATES=[{'BACKEND':'django.template.backends.django.DjangoTemplates','DIRS':[BASE_DIR/'templates'],'APP_DIRS':True,'OPTIONS':{'context_processors':['django.template.context_processors.debug','django.template.context_processors.request','django.contrib.auth.context_processors.auth','django.contrib.messages.context_processors.messages']}}]
@@ -26,3 +26,12 @@ SESSION_COOKIE_SECURE=not DEBUG;CSRF_COOKIE_SECURE=not DEBUG
 SECURE_CONTENT_TYPE_NOSNIFF=True;SECURE_REFERRER_POLICY='same-origin';X_FRAME_OPTIONS='DENY'
 SECURE_SSL_REDIRECT=os.environ.get('DJANGO_SECURE_SSL_REDIRECT','0')=='1'
 SECURE_HSTS_SECONDS=int(os.environ.get('DJANGO_HSTS_SECONDS','0'))
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": ["rest_framework.authentication.SessionAuthentication"],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 25,
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.UserRateThrottle", "rest_framework.throttling.AnonRateThrottle"],
+    "DEFAULT_THROTTLE_RATES": {"user": "120/min", "anon": "20/min"},
+}
