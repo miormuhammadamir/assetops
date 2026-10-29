@@ -1,5 +1,8 @@
 # AssetOps — Industrial Asset & Maintenance Management
 
+<img width="1847" height="937" alt="image" src="https://github.com/user-attachments/assets/4f247cb4-87b7-4807-8bcf-1e6c34134706" />
+
+
 Portfolio-grade **Django maintenance management application** with server-rendered web UI and a Django REST Framework API. Supports registered equipment, controlled maintenance work orders, recurring preventive plans and auditable status events.
 
 > **Status:** demonstrable application / portfolio release. Not certified or hardened for live industrial operations. Runtime verification must be performed in your deployment environment.
